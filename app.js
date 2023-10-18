@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const io = require("socket.io")(process.env.SOCKET_PORT || 8080, {
   cors: {
-    origin: "*",
+    origin: '*',
     methods: ["GET", "POST"],
   },
 });
