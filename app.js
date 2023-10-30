@@ -5,8 +5,8 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const io = require("socket.io")(process.env.SOCKET_PORT || 8080, {
   cors: {
-    origin: '*',
-    methods: ["GET", "POST"],
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH"],
   },
 });
 
@@ -112,7 +112,6 @@ app.post("/api/login", async (req, res, next) => {
       res.status(400).send("Please fill all the required fields");
     } else {
       const user = await Users.findOne({ email });
-      console.log(user, "USERRR");
       if (!user) {
         res.status(400).send("Users Email is incorrect!");
       } else {
@@ -139,7 +138,7 @@ app.post("/api/login", async (req, res, next) => {
                 }
               );
               await user.save();
-              console.log(user);
+              // console.log(user);
               return res.status(200).send({ user, token });
             }
           );
@@ -198,6 +197,7 @@ app.post("/api/message", async (req, res) => {
     if (!senderId || !message) {
       return res.status(400).send("Please fill all the required feilds");
     }
+    console.log(conversationId, "ID TEST");
     if (conversationId === "new" && receiverId) {
       const newConversation = new Conversations({
         members: [senderId, receiverId],
@@ -224,7 +224,7 @@ app.post("/api/message", async (req, res) => {
 app.get("/api/message/:conversationId", async (req, res) => {
   try {
     const checkMessages = async (conversationId) => {
-      console.log(conversationId, "conversationId");
+      console.log(conversationId, "conversationIddddd");
       const messages = await Message.find({ conversationId });
       const messageUserData = Promise.all(
         messages.map(async (message) => {
@@ -243,6 +243,7 @@ app.get("/api/message/:conversationId", async (req, res) => {
         members: { $all: [req.query.senderId, req.query.receiverId] },
       });
       if (checkConversation.length > 0) {
+        console.log(checkConversation, "CHECK CONVERSATION");
         checkMessages(checkConversation[0]._id);
       } else {
         return res.status(200).json([]);
@@ -250,18 +251,6 @@ app.get("/api/message/:conversationId", async (req, res) => {
     } else {
       checkMessages(conversationId);
     }
-    // const messages = await Message.find({ conversationId });
-    // const messageDataUser = Promise.all(
-    //   messages.map(async (message) => {
-    //     const user = await Users.findById(message.senderId);
-    //     return {
-    //       user: { id: user._id, email: user.email, fullName: user.fullName },
-    //       message: message.message,
-    //     };
-    //   })
-    // );
-
-    // res.status(200).json(await messageDataUser);
   } catch (e) {
     console.log("Fetching messages via conversation ID error", e);
   }
